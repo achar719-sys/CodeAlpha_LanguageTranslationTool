@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Translator</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f7fa;
+      display: flex;
+      justify-content: center;
+      padding: 40px;
+    }
+
+    .container {
+      background: rgb(23, 92, 196);
+      width: 600px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 26px;
+      color: #f9f9f9;
+    }
+
+    textarea {
+      width: 100%;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      resize: none;
+      transition: border 0.2s;
+    }
+
+    textarea:focus {
+      border-color: #4a90e2;
+      outline: none;
+    }
+
+    label {
+      margin-top: 15px;
+      display: block;
+      font-weight: bold;
+      color: #fefdfd;
+    }
+
+    select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 16px;
+      margin-top: 5px;
+    }
+
+    button {
+      background: #4a90e2;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: background 0.2s, transform 0.1s;
+    }
+
+    button:hover {
+      background: #3b7ac2;
+    }
+
+    button:active {
+      transform: scale(0.97);
+    }
+
+    #output {
+      background: #f9f6f6;
+      padding: 15px;
+      border-radius: 8px;
+      min-height: 60px;
+      margin-top: 20px;
+      font-size: 17px;
+      color: #000000;
+    }
+
+    .button-row {
+      margin-top: 15px;
+      display: flex;
+      gap: 10px;
+    }
+
+    .secondary-btn {
+      background: #777;
+    }
+
+    .secondary-btn:hover {
+      background: #555;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>AI Translator</h2>
+
+    <textarea id="inputText" rows="5" placeholder="Enter text here..."></textarea>
+
+    <label>Source Language:</label>
+    <select id="sourceLang">
+      <option value="en">English</option>
+      <option value="es">Spanish</option>
+      <option value="fr">French</option>
+      <option value="de">German</option>
+      <option value="it">Italian</option>
+    </select>
+
+    <label>Target Language:</label>
+    <select id="targetLang">
+      <option value="es">Spanish</option>
+      <option value="en">English</option>
+      <option value="fr">French</option>
+      <option value="de">German</option>
+      <option value="it">Italian</option>
+    </select>
+
+    <button onclick="translateText()">Translate</button>
+
+    <div id="output"></div>
+
+    <div class="button-row">
+      <button class="secondary-btn" onclick="copyText()">Copy</button>
+      <button class="secondary-btn" onclick="speakText()">Speak</button>
+    </div>
+  </div>
+
+  <script>
+    async function translateText() {
+      const input = document.getElementById("inputText").value;
+      const source = document.getElementById("sourceLang").value;
+      const target = document.getElementById("targetLang").value;
+
+      const key = "MS_TRANSLATOR_KEY";    
+      const region = "eastus";    
+      const endpoint = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0";
+
+      const url = `${endpoint}&from=${source}&to=${target}`;
+
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Ocp-Apim-Subscription-Key": key,
+          "Ocp-Apim-Subscription-Region": region
+        },
+        body: JSON.stringify([{ Text: input }])
+      });
+
+      const data = await response.json();
+      document.getElementById("output").innerText = data[0].translations[0].text;
+    }
+
+    function copyText() {
+      const text = document.getElementById("output").innerText;
+      navigator.clipboard.writeText(text);
+    }
+
+    function speakText() {
+      const text = document.getElementById("output").innerText;
+      const speech = new SpeechSynthesisUtterance(text);
+      speech.lang = document.getElementById("targetLang").value;
+      window.speechSynthesis.speak(speech);
+    }
+  </script>
+
+</body>
+</html>
