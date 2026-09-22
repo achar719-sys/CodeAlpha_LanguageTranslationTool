@@ -145,24 +145,29 @@
       const source = document.getElementById("sourceLang").value;
       const target = document.getElementById("targetLang").value;
 
-      const key = "API_KEY";    
-      const region = "eastus";    
-      const endpoint = "https://api.cognitive.microsofttranslator.com/translate?api-version=3.0";
+      const output = document.getElementById("output");
 
-      const url = `${endpoint}&from=${source}&to=${target}`;
+      // The key lives in .env on the server; the browser only talks to our backend
+      let data;
+      try {
+        const response = await fetch("http://localhost:3000/translate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text: input, from: source, to: target })
+        });
+        data = await response.json();
+      } catch (err) {
+        output.innerText = "Could not reach the backend. Is server.js running on port 3000?";
+        return;
+      }
 
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Ocp-Apim-Subscription-Key": key,
-          "Ocp-Apim-Subscription-Region": region
-        },
-        body: JSON.stringify([{ Text: input }])
-      });
+      if (!Array.isArray(data)) {
+        console.error("Translation failed:", data);
+        output.innerText = "Translation failed: " + (data.error?.message || "unknown error");
+        return;
+      }
 
-      const data = await response.json();
-      document.getElementById("output").innerText = data[0].translations[0].text;
+      output.innerText = data[0].translations[0].text;
     }
 
     function copyText() {
